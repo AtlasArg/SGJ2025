@@ -13,6 +13,7 @@
 ABaseProjectile::ABaseProjectile()
 {
 	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bTickEvenWhenPaused = false;
 
 	Collision = CreateDefaultSubobject<USphereComponent>(TEXT("Collision"));
 	Collision->InitSphereRadius(8.f);

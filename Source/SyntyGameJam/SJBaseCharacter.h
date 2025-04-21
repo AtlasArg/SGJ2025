@@ -11,6 +11,7 @@ class USJAttributeComponent;
 class USkeletalMeshComponent;
 class ASJPickeableActor;
 class UAnimMontage;
+class ASJInteractableActor;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FProjectileFired);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FItemsUpdated, int32, itemCount);
@@ -48,6 +49,9 @@ public:
 	void GainGoldCoins(int32 GainedCoins);
 
 	UFUNCTION(BlueprintCallable)
+	void RemoveGoldCoins(int32 RemovedCoins);
+
+	UFUNCTION(BlueprintCallable)
 	FORCEINLINE int32 GetGoldCoins() { return GoldCoins; }
 
 	virtual void ReceivePickeable_Implementation(ASJPickeableActor* Pickeable) override;
@@ -58,9 +62,23 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Combat")
 	TObjectPtr<UAnimMontage> FireMontage;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Combat")
+	TObjectPtr<UAnimMontage> DeathMontage;
+
 	void FinishFiringProjectile();
 
 	void SetFireTargetLocation(FVector FireLocation);
+
+	bool CanMove();
+	 
+	void GrantReputation(int32 ReputationGranted);
+	int32 GetReputation();
+
+	void GrantHealth(float HealthGained);
+
+	void SetCurrentInteractable(ASJInteractableActor* NewInteractable);
+
+	virtual void InteractWithMapElement();
 
 protected:
 	
@@ -96,10 +114,17 @@ protected:
 	void ResetFire();
 
 	bool bCanFire = true;
+	bool bDead = false;
 	FTimerHandle FireCooldownHandle;
 
 	UFUNCTION()
 	virtual void CharacterDied();
 
+	UFUNCTION()
+	void OnMontageEnded(UAnimMontage* Montage, bool bInterrupted);
+
 	FVector FireTargetLocation;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<ASJInteractableActor> CurrentInteractable;
 };

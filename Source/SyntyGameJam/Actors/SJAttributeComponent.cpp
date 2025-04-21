@@ -2,33 +2,23 @@
 
 
 #include "SJAttributeComponent.h"
-//#include "Net/UnrealNetwork.h"
+#include "SyntyGameJam/SyntyGameJamGameMode.h"
+#include "SyntyGameJam/SJBaseCharacter.h"
 
-// Sets default values for this component's properties
 USJAttributeComponent::USJAttributeComponent()
 {
-	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
-	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
 	
 	HealthMax = 100.0f;
 	Health = HealthMax;
+
+	Reputation = 1;
 }
 
-
-// Called when the game starts
 void USJAttributeComponent::BeginPlay()
 {
 	Super::BeginPlay();
 }
-
-//void USJAttributeComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-//{
-//	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-//
-//	DOREPLIFETIME(USJAttributeComponent, Health);
-//	DOREPLIFETIME(USJAttributeComponent, HealthMax);
-//}
 
 // Called every frame
 void USJAttributeComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -64,6 +54,23 @@ float USJAttributeComponent::GetHealthMax() const
 	return HealthMax;
 }
 
+int32 USJAttributeComponent::GetReputation() const
+{
+	return Reputation;
+}
+
+void USJAttributeComponent::GrantReputation(int32 ReputationGranted)
+{
+	Reputation += ReputationGranted;
+
+	ASyntyGameJamGameMode* GM = GetWorld()->GetAuthGameMode<ASyntyGameJamGameMode>();
+	if (GM)
+	{
+		ASJBaseCharacter* BaseCharacter = Cast<ASJBaseCharacter>(GetOwner());
+		GM->OnCharacterGainedReputation(BaseCharacter);
+	}
+}
+
 bool USJAttributeComponent::ApplyHealthChange(AActor* InstigatorActor, float Delta)
 {
 	if (!GetOwner()->CanBeDamaged() && Delta < 0.0f)
@@ -88,22 +95,15 @@ bool USJAttributeComponent::ApplyHealthChange(AActor* InstigatorActor, float Del
 		OnHealthChanged.Broadcast(InstigatorActor, this, Health, Delta);
 	}
 
-	//if (ActualDelta != 0.0f)
-	//{
-	//	MulticastHealthChanged(InstigatorActor, Health, ActualDelta);
-	//}
-
 	// Died
 	if (ActualDelta < 0.0f && Health == 0.0f)
 	{
-		// TODO: handle in game mode
-
-		/*ASGameModeBase* GM = GetWorld()->GetAuthGameMode<ASGameModeBase>();
+		ASyntyGameJamGameMode* GM = GetWorld()->GetAuthGameMode<ASyntyGameJamGameMode>();
 		if (GM)
 		{
-			GM->OnActorKilled(GetOwner(), InstigatorActor);
-		}*/
-
+			ASJBaseCharacter* BaseCharacter = Cast<ASJBaseCharacter>(GetOwner());
+			GM->OnCharacterKilled(BaseCharacter);
+		}
 
 		if (OnOwnerKilled.IsBound())
 		{

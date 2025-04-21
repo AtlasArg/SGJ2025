@@ -3,7 +3,18 @@
 #include "SyntyGameJamGameMode.h"
 #include "SyntyGameJamPlayerController.h"
 #include "SyntyGameJamCharacter.h"
+#include "SyntyGameJam/Actors/SJBaseEnemy.h"
+#include "SyntyGameJam/Actors/SJSpawner.h"
+#include "SyntyGameJam/Actors/SJPickeableActor.h"
+#include "SyntyGameJam/SyntyGameJamCharacter.h"
+#include "SyntyGameJam/SJBaseCharacter.h"
+#include "SyntyGameJam/Interactions/SJMessages.h"
 #include "UObject/ConstructorHelpers.h"
+#include "Kismet/GameplayStatics.h"
+#include "GameplayTagContainer.h"
+//#include "GameFramework/GameplayMessageSubsystem.h"
+//#include "GameplayMessageSubsystem.h"
+//#include "Subsystems/GameplayMessageSubsystem.h"
 
 ASyntyGameJamGameMode::ASyntyGameJamGameMode()
 {
@@ -19,8 +30,184 @@ ASyntyGameJamGameMode::ASyntyGameJamGameMode()
 
 	// set default controller to our Blueprinted controller
 	static ConstructorHelpers::FClassFinder<APlayerController> PlayerControllerBPClass(TEXT("/Game/TopDown/Blueprints/BP_TopDownPlayerController"));
-	if(PlayerControllerBPClass.Class != NULL)
+	if (PlayerControllerBPClass.Class != NULL)
 	{
 		PlayerControllerClass = PlayerControllerBPClass.Class;
+	}
+}
+
+void ASyntyGameJamGameMode::OnCharacterKilled(ASJBaseCharacter* KilledCharacter)
+{
+	ASyntyGameJamCharacter* PlayerCharacter = Cast<ASyntyGameJamCharacter>(KilledCharacter);
+	if (IsValid(PlayerCharacter))
+	{
+		ShowDefeatScreen();
+	}
+	else 
+	{
+		ASJBaseEnemy* EnemyCharacter = Cast<ASJBaseEnemy>(KilledCharacter);
+		if (IsValid(EnemyCharacter))
+		{
+			SpawnedEnemies.Remove(EnemyCharacter);
+			if (SpawnedEnemies.Num() == 0)
+			{
+				ShowVictoryScreen();
+			}
+		}
+	}
+}
+
+void ASyntyGameJamGameMode::OnCharacterGainedReputation(ASJBaseCharacter* ModifiedCharacter)
+{
+	if (ModifiedCharacter->GetReputation() >= ReputationToWin)
+	{
+		ASyntyGameJamCharacter* PlayerCharacter = Cast<ASyntyGameJamCharacter>(ModifiedCharacter);
+		if (IsValid(PlayerCharacter))
+		{
+			ShowVictoryScreen();
+			
+		}
+		else
+		{
+			ASJBaseEnemy* EnemyCharacter = Cast<ASJBaseEnemy>(ModifiedCharacter);
+			if (IsValid(EnemyCharacter))
+			{
+				ShowDefeatScreen();
+			}
+		}
+	}
+}
+
+void ASyntyGameJamGameMode::BeginPlay()
+{
+	Super::BeginPlay();
+	TArray<AActor*> FoundActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ASJSpawner::StaticClass(), FoundActors);
+
+	for (AActor* ActorFound: FoundActors)
+	{
+		ASJSpawner* Spawner = Cast<ASJSpawner>(ActorFound);
+		if (IsValid(Spawner))
+		{
+			EnemySpawnersPositions.Add(Spawner);
+		}
+	}
+
+	SpawnEnemies();
+	
+	GetWorldTimerManager().SetTimer(SpawnGoldTimerHandle, this, &ThisClass::SpawnGold, SecondsToSpawnGold, true);
+	GetWorldTimerManager().SetTimer(SpawnBulletsTimerHandle, this, &ThisClass::SpawnBullets, SecondsToSpawnBullets, true);
+
+
+	FTimerHandle ToRemoveHandle;
+	GetWorldTimerManager().SetTimer(ToRemoveHandle, this, &ThisClass::TestMethod, 2.0, false);
+}
+
+void ASyntyGameJamGameMode::SpawnEnemies()
+{
+	if (!EnemyClass)
+	{
+		return;
+	}
+
+	TArray<ASJSpawner*> AvailableSpawners = EnemySpawnersPositions;
+	while (AvailableSpawners.Num() > 0)
+	{
+		int32 SpawnIndex = FMath::RandRange(0, AvailableSpawners.Num() - 1);
+		if (AvailableSpawners.Num() > 0)
+		{
+			ASJSpawner* ChosenSpawner = AvailableSpawners[SpawnIndex];
+
+			if (IsValid(ChosenSpawner))
+			{
+				FActorSpawnParameters SpawnParams;
+				SpawnParams.Owner = this;
+				ASJBaseEnemy* SpawnedEnemy = GetWorld()->SpawnActor<ASJBaseEnemy>(EnemyClass, ChosenSpawner->GetActorLocation(), FRotator::ZeroRotator, SpawnParams);
+				SpawnedEnemies.Add(SpawnedEnemy);
+			}
+
+			AvailableSpawners.RemoveAt(SpawnIndex);
+		}
+	}
+}
+
+void ASyntyGameJamGameMode::ShowVictoryScreen()
+{
+	SendGameResultMessage(true);
+}
+
+void ASyntyGameJamGameMode::ShowDefeatScreen()
+{
+	SendGameResultMessage(false);
+}
+
+void ASyntyGameJamGameMode::SpawnBullets()
+{
+	if (ItemSpawnersPositions.Num() > 0)
+	{
+		int32 SpawnIndex = FMath::RandRange(0, ItemSpawnersPositions.Num() - 1);
+		ASJSpawner* ChosenSpawner = ItemSpawnersPositions[SpawnIndex];
+
+		if (IsValid(ChosenSpawner))
+		{
+			FActorSpawnParameters SpawnParams;
+			SpawnParams.Owner = this;
+			ASJPickeableActor* SpawnedBullets = GetWorld()->SpawnActor<ASJPickeableActor>(BulletsClass, ChosenSpawner->GetActorLocation(), FRotator::ZeroRotator, SpawnParams);
+			//TODO: por ahi estaria bueno dejar una constancia de que cosas hay spawneadas en el mapa 
+			// y no estar spawneando cada dos por tres si hay mucho ya spawneado.
+		}
+	}
+}
+
+void ASyntyGameJamGameMode::SpawnGold()
+{
+	// TODO: refactor, son la misma funcion pero entra una clase nomas de diferencia.
+	if (ItemSpawnersPositions.Num() > 0)
+	{
+		int32 SpawnIndex = FMath::RandRange(0, ItemSpawnersPositions.Num() - 1);
+		ASJSpawner* ChosenSpawner = ItemSpawnersPositions[SpawnIndex];
+
+		if (IsValid(ChosenSpawner))
+		{
+			FActorSpawnParameters SpawnParams;
+			SpawnParams.Owner = this;
+			ASJPickeableActor* SpawnedBullets = GetWorld()->SpawnActor<ASJPickeableActor>(GoldClass, ChosenSpawner->GetActorLocation(), FRotator::ZeroRotator, SpawnParams);
+		}
+	}
+}
+
+void ASyntyGameJamGameMode::TestMethod()
+{
+	// TODO: remove all this shity test thing
+	APlayerController* PC = GetWorld()->GetFirstPlayerController();
+	ASyntyGameJamPlayerController* GameJamPC = Cast<ASyntyGameJamPlayerController>(PC);
+	ASyntyGameJamCharacter* JamCharacter = Cast<ASyntyGameJamCharacter>(GameJamPC->GetPawn());
+
+	JamCharacter->GrantReputation(ReputationToWin);
+}
+
+void ASyntyGameJamGameMode::SendGameResultMessage(bool bVictory)
+{
+	// TODO: another refactor to do.
+	//FGameplayTag Tag = FGameplayTag::RequestGameplayTag(FName("UI.ShowGameResult"));
+	//FSJGameResultMessage Payload;
+	//Payload.bVictory = bVictory;
+
+	//UGameplayMessageSubsystem* MessageSubsystem = UGameplayMessageSubsystem::Get(GetWorld()); // "this" must be a WorldContext
+	//if (MessageSubsystem)
+	//{
+	//	MessageSubsystem->BroadcastMessage(Tag, Payload);
+	//}
+
+	APlayerController* PC = GetWorld()->GetFirstPlayerController();
+	if (PC)
+	{
+		PC->bShowMouseCursor = true;
+		PC->SetInputMode(FInputModeUIOnly());
+
+		ASyntyGameJamPlayerController* GameJamPC = Cast<ASyntyGameJamPlayerController>(PC);
+		GameJamPC->ShowGameResult(bVictory);
+
+		UGameplayStatics::SetGamePaused(GetWorld(), true);
 	}
 }

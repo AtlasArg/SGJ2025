@@ -14,6 +14,7 @@ class UInputAction;
 struct FInputActionValue;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnShowGameResultEvent, bool, bValue);
 
 UCLASS()
 class ASyntyGameJamPlayerController : public APlayerController
@@ -22,6 +23,9 @@ class ASyntyGameJamPlayerController : public APlayerController
 
 public:
 	ASyntyGameJamPlayerController();
+
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FOnShowGameResultEvent OnShowGameResultEvent;
 
 	/** Time Threshold to know if it was a short press */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
@@ -49,6 +53,8 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Input")
 	TObjectPtr<UInputAction> FireAction;
 
+	void ShowGameResult(bool bVictory);
+
 protected:
 	/** True if the controlled character should navigate to the mouse cursor. */
 	uint32 bMoveToMouseCursor : 1;
@@ -62,8 +68,6 @@ protected:
 	void OnInputStarted();
 	void OnSetDestinationTriggered();
 	void OnSetDestinationReleased();
-	void OnTouchTriggered();
-	void OnTouchReleased();
 
 	void Move(const FInputActionValue& InputActionValue);
 

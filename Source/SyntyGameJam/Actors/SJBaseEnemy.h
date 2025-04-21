@@ -17,7 +17,6 @@ class SYNTYGAMEJAM_API ASJBaseEnemy : public ASJBaseCharacter
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this character's properties
 	ASJBaseEnemy();
 
 	virtual void PossessedBy(AController* NewController) override;
@@ -31,11 +30,10 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category = "Combat")
 	TObjectPtr<AActor> CombatTarget; 
 
-	/*UFUNCTION(BlueprintCallable)
-	virtual void FireProjectile(FVector Location) override;*/
-
 protected:
 	virtual void BeginPlay() override;
+
+	virtual void CharacterDied() override;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<UWidgetComponent> HealthBar;

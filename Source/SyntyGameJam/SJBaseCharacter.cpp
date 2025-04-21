@@ -5,13 +5,14 @@
 #include "Actors/BaseProjectile.h"
 #include "Actors/SJAttributeComponent.h"
 #include "Actors/SJPickeableActor.h"
+#include "Actors/SJInteractableActor.h"
 #include "SyntyGameJam/SyntyGameJam.h"
 
 // Sets default values
 ASJBaseCharacter::ASJBaseCharacter()
 {
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bTickEvenWhenPaused = false;
 
 	GetMesh()->SetCollisionResponseToChannel(ECC_Projectile, ECR_Overlap);
 	GetMesh()->SetGenerateOverlapEvents(true);
@@ -69,6 +70,39 @@ void ASJBaseCharacter::SetFireTargetLocation(FVector FireLocation)
 	FireTargetLocation = FireLocation;
 }
 
+bool ASJBaseCharacter::CanMove()
+{
+	return !bDead;
+}
+
+void ASJBaseCharacter::GrantReputation(int32 ReputationGranted)
+{
+	AttributeComponent->GrantReputation(ReputationGranted);
+}
+
+int32 ASJBaseCharacter::GetReputation()
+{
+	return AttributeComponent->GetReputation();
+}
+
+void ASJBaseCharacter::GrantHealth(float HealthGained)
+{
+	AttributeComponent->ApplyHealthChange(this, HealthGained);
+}
+
+void ASJBaseCharacter::SetCurrentInteractable(ASJInteractableActor* NewInteractable)
+{
+	CurrentInteractable = NewInteractable;
+}
+
+void ASJBaseCharacter::InteractWithMapElement()
+{
+	if (CurrentInteractable)
+	{
+		CurrentInteractable->Interact(this);
+	}
+}
+
 // Called when the game starts or when spawned
 void ASJBaseCharacter::BeginPlay()
 {
@@ -98,7 +132,6 @@ void ASJBaseCharacter::FireProjectile(FVector Location)
 		return;
 	}
 
-	//FVector TargetLocation = HitResult.ImpactPoint;
 	SetFireTargetLocation(Location);
 	UpdateFacingTarget(Location);
 
@@ -106,55 +139,7 @@ void ASJBaseCharacter::FireProjectile(FVector Location)
 	if (FireMontage && AnimInstance)
 	{
 		AnimInstance->Montage_Play(FireMontage);
-		/*AnimInstance->OnPlayMontageNotifyBegin.AddDynamic(this, &ThisClass::OnNotifyBeginReceived);*/
 	}
-
-	//FVector WorldLocation, WorldDirection;
-	//APlayerController* PC = Cast<APlayerController>(GetController());
-
-	//if (PC && PC->DeprojectMousePositionToWorld(WorldLocation, WorldDirection))
-	//{
-	//	// TODO: 1. refactor que no se vuelva a llamar de nuevo el controller desde aca.
-	//	// TODO: 2. que las balas "salgan Chatas" no elevadas si el mouse esta elevado ?
-	//	FHitResult HitResult;
-	//	FVector TraceStart = WorldLocation;
-	//	FVector TraceEnd = TraceStart + WorldDirection * 10000.f; // long range trace
-
-	//	FCollisionQueryParams Params;
-	//	Params.AddIgnoredActor(this); // Ignore self
-
-	//	if (GetWorld()->LineTraceSingleByChannel(HitResult, TraceStart, TraceEnd, ECC_Visibility, Params))
-	//	{
-	//		FVector TargetLocation = HitResult.ImpactPoint;
-
-	//		UpdateFacingTarget(TargetLocation);
-
-	//		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-	//		if (FireMontage && AnimInstance)
-	//		{
-	//			AnimInstance->Montage_Play(FireMontage);
-	//			/*AnimInstance->OnPlayMontageNotifyBegin.AddDynamic(this, &ThisClass::OnNotifyBeginReceived);*/
-	//		}
-
-	//	/*	FTransform MuzzleTransform = GetMesh()->GetSocketTransform(MuzzleSocket);
-	//		FVector MuzzleLocation = MuzzleTransform.GetLocation();
-
-	//		FVector ShootDirection = (TargetLocation - MuzzleLocation).GetSafeNormal();
-	//		FRotator MuzzleRotation = ShootDirection.Rotation();
-
-	//		FActorSpawnParameters SpawnParams;
-	//		SpawnParams.Owner = this;
-	//		SpawnParams.Instigator = GetInstigator();
-
-	//		GetWorld()->SpawnActor<ABaseProjectile>(ProjectileClass, MuzzleLocation, MuzzleRotation, SpawnParams);
-	//		Bullets--;
-
-	//		if (OnFProjectileFired.IsBound())
-	//		{
-	//			OnFProjectileFired.Broadcast();
-	//		}*/
-	//	}
-	//}
 }
 
 void ASJBaseCharacter::GainBullets(int32 GainedBullets)
@@ -175,6 +160,15 @@ void ASJBaseCharacter::GainGoldCoins(int32 GainedCoins)
 	}
 }
 
+void ASJBaseCharacter::RemoveGoldCoins(int32 RemovedCoins)
+{
+	GoldCoins -= RemovedCoins;
+	if (OnCoinsUpdated.IsBound())
+	{
+		OnCoinsUpdated.Broadcast(GoldCoins);
+	}
+}
+
 void ASJBaseCharacter::ResetFire()
 {
 	bCanFire = true;
@@ -182,7 +176,20 @@ void ASJBaseCharacter::ResetFire()
 
 void ASJBaseCharacter::CharacterDied()
 {
-	// TODO: we can refactor this
+	bDead = true;
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (DeathMontage && AnimInstance)
+	{
+		FOnMontageEnded MontageEndedDelegate;
+		MontageEndedDelegate.BindUObject(this, &ThisClass::OnMontageEnded);
+		AnimInstance->Montage_Play(DeathMontage);
+		AnimInstance->Montage_SetBlendingOutDelegate(MontageEndedDelegate, DeathMontage);
+	}
+}
+
+void ASJBaseCharacter::OnMontageEnded(UAnimMontage* Montage, bool bInterrupted)
+{
+	// TODO: we can refactor this to one method that returns the pickeable and then do the assignation
 
 	int32 RandomOffsetInX = FMath::RandRange(50, 200);
 	int32 RandomOffsetInY = FMath::RandRange(50, 200);
@@ -195,9 +202,12 @@ void ASJBaseCharacter::CharacterDied()
 		SpawnParams.Owner = this;
 		SpawnParams.Instigator = GetInstigator();
 		ASJPickeableActor* ItemToPick = GetWorld()->SpawnActor<ASJPickeableActor>(DropeableBulletsClass, LocationToSpawn, FRotator(), SpawnParams);
-		ItemToPick->Amount = GetBulletCount();
+		if (IsValid(ItemToPick))
+		{
+			ItemToPick->Amount = GetBulletCount();
+		}
 	}
-	
+
 	if (DropeableCoinsClass)
 	{
 		RandomOffsetInX = FMath::RandRange(50, 200);
@@ -207,8 +217,11 @@ void ASJBaseCharacter::CharacterDied()
 		SpawnParamsCoins.Owner = this;
 		SpawnParamsCoins.Instigator = GetInstigator();
 		ASJPickeableActor* ItemToPick = GetWorld()->SpawnActor<ASJPickeableActor>(DropeableCoinsClass, LocationToSpawn, FRotator(), SpawnParamsCoins);
-		ItemToPick->Amount = GetGoldCoins();
+		if (IsValid(ItemToPick))
+		{
+			ItemToPick->Amount = GetGoldCoins();
+		}
 	}
-	
+
 	Destroy();
 }

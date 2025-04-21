@@ -35,6 +35,11 @@ void ASyntyGameJamPlayerController::BeginPlay()
 	}
 }
 
+void ASyntyGameJamPlayerController::ShowGameResult(bool bVictory)
+{
+	OnShowGameResultEvent.Broadcast(bVictory);
+}
+
 void ASyntyGameJamPlayerController::SetupInputComponent()
 {
 	// set up gameplay key bindings
@@ -48,12 +53,6 @@ void ASyntyGameJamPlayerController::SetupInputComponent()
 		EnhancedInputComponent->BindAction(SetDestinationClickAction, ETriggerEvent::Triggered, this, &ASyntyGameJamPlayerController::OnSetDestinationTriggered);
 		EnhancedInputComponent->BindAction(SetDestinationClickAction, ETriggerEvent::Completed, this, &ASyntyGameJamPlayerController::OnSetDestinationReleased);
 		EnhancedInputComponent->BindAction(SetDestinationClickAction, ETriggerEvent::Canceled, this, &ASyntyGameJamPlayerController::OnSetDestinationReleased);*/
-
-		//// Setup touch input events
-		//EnhancedInputComponent->BindAction(SetDestinationTouchAction, ETriggerEvent::Started, this, &ASyntyGameJamPlayerController::OnInputStarted);
-		//EnhancedInputComponent->BindAction(SetDestinationTouchAction, ETriggerEvent::Triggered, this, &ASyntyGameJamPlayerController::OnTouchTriggered);
-		//EnhancedInputComponent->BindAction(SetDestinationTouchAction, ETriggerEvent::Completed, this, &ASyntyGameJamPlayerController::OnTouchReleased);
-		//EnhancedInputComponent->BindAction(SetDestinationTouchAction, ETriggerEvent::Canceled, this, &ASyntyGameJamPlayerController::OnTouchReleased);
 
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ASyntyGameJamPlayerController::Move);
 		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Triggered, this, &ThisClass::FireProjectile);
@@ -72,21 +71,10 @@ void ASyntyGameJamPlayerController::OnInputStarted()
 // Triggered every frame when the input is held down
 void ASyntyGameJamPlayerController::OnSetDestinationTriggered()
 {
-	// We flag that the input is being pressed
-	//FollowTime += GetWorld()->GetDeltaSeconds();
-	
-	// We look for the location in the world where the player has pressed the input
+
 	FHitResult Hit;
 	bool bHitSuccessful = false;
-	//if (bIsTouch)
-	//{
-	//	bHitSuccessful = GetHitResultUnderFinger(ETouchIndex::Touch1, ECollisionChannel::ECC_Visibility, true, Hit);
-	//}
-	//else
-	//{
-		bHitSuccessful = GetHitResultUnderCursor(ECollisionChannel::ECC_Visibility, true, Hit);
-//	}
-
+	bHitSuccessful = GetHitResultUnderCursor(ECollisionChannel::ECC_Visibility, true, Hit);
 	// If we hit a surface, cache the location
 	if (bHitSuccessful)
 	{
@@ -115,25 +103,14 @@ void ASyntyGameJamPlayerController::OnSetDestinationReleased()
 	//FollowTime = 0.f;
 }
 
-// Triggered every frame when the input is held down
-void ASyntyGameJamPlayerController::OnTouchTriggered()
-{
-	//bIsTouch = true;
-	OnSetDestinationTriggered();
-}
-
-void ASyntyGameJamPlayerController::OnTouchReleased()
-{
-//	bIsTouch = false;
-	OnSetDestinationReleased();
-}
-
 void ASyntyGameJamPlayerController::Move(const FInputActionValue& InputActionValue)
 {
-	/*if (GetASC() && GetASC()->HasMatchingGameplayTag(FLKGameplayTags::Get().Player_Block_InputPressed))
+	APawn* ControlledPawn = GetPawn<APawn>();
+	ASyntyGameJamCharacter* PlayerCharacter = Cast<ASyntyGameJamCharacter>(ControlledPawn);
+	if (!IsValid(PlayerCharacter) || !PlayerCharacter->CanMove())
 	{
 		return;
-	}*/
+	}
 
 	const FVector2D InputAxisVector = InputActionValue.Get<FVector2D>();
 	const FRotator Rotation = GetControlRotation();
@@ -142,7 +119,7 @@ void ASyntyGameJamPlayerController::Move(const FInputActionValue& InputActionVal
 	const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 	const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 
-	if (APawn* ControlledPawn = GetPawn<APawn>())
+	if (IsValid(ControlledPawn))
 	{
 		ControlledPawn->AddMovementInput(ForwardDirection, InputAxisVector.Y);
 		ControlledPawn->AddMovementInput(RightDirection, InputAxisVector.X);
@@ -153,7 +130,6 @@ void ASyntyGameJamPlayerController::FireProjectile()
 {
 	if (ASyntyGameJamCharacter* SyntyCharacter = Cast<ASyntyGameJamCharacter>(GetPawn()))
 	{
-		
 
 		FVector WorldLocation, WorldDirection;
 
@@ -169,33 +145,6 @@ void ASyntyGameJamPlayerController::FireProjectile()
 			if (GetWorld()->LineTraceSingleByChannel(HitResult, TraceStart, TraceEnd, ECC_Visibility, Params))
 			{
 				SyntyCharacter->FireProjectile(HitResult.ImpactPoint);
-				/*FVector TargetLocation = HitResult.ImpactPoint;
-
-				UpdateFacingTarget(TargetLocation);
-
-				UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-				if (FireMontage && AnimInstance)
-				{
-					AnimInstance->Montage_Play(FireMontage);
-				}*/
-
-				/*	FTransform MuzzleTransform = GetMesh()->GetSocketTransform(MuzzleSocket);
-					FVector MuzzleLocation = MuzzleTransform.GetLocation();
-
-					FVector ShootDirection = (TargetLocation - MuzzleLocation).GetSafeNormal();
-					FRotator MuzzleRotation = ShootDirection.Rotation();
-
-					FActorSpawnParameters SpawnParams;
-					SpawnParams.Owner = this;
-					SpawnParams.Instigator = GetInstigator();
-
-					GetWorld()->SpawnActor<ABaseProjectile>(ProjectileClass, MuzzleLocation, MuzzleRotation, SpawnParams);
-					Bullets--;
-
-					if (OnFProjectileFired.IsBound())
-					{
-						OnFProjectileFired.Broadcast();
-					}*/
 			}
 		}
 
