@@ -7,6 +7,7 @@
 #include "Actors/SJPickeableActor.h"
 #include "Actors/SJInteractableActor.h"
 #include "SyntyGameJam/SyntyGameJam.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 ASJBaseCharacter::ASJBaseCharacter()
@@ -46,6 +47,11 @@ void ASJBaseCharacter::ReceivePickeable_Implementation(ASJPickeableActor* Pickea
 
 void ASJBaseCharacter::FinishFiringProjectile()
 {
+	if (!GetWorld() || GetWorld()->bIsTearingDown)
+	{
+		return;
+	}
+
 	FTransform MuzzleTransform = GetMesh()->GetSocketTransform(MuzzleSocket);
 	FVector MuzzleLocation = MuzzleTransform.GetLocation();
 
@@ -78,6 +84,10 @@ bool ASJBaseCharacter::CanMove()
 void ASJBaseCharacter::GrantReputation(int32 ReputationGranted)
 {
 	AttributeComponent->GrantReputation(ReputationGranted);
+	if (OnReputationChanged.IsBound())
+	{
+		OnReputationChanged.Broadcast(GetReputation());
+	}
 }
 
 int32 ASJBaseCharacter::GetReputation()
@@ -88,6 +98,19 @@ int32 ASJBaseCharacter::GetReputation()
 void ASJBaseCharacter::GrantHealth(float HealthGained)
 {
 	AttributeComponent->ApplyHealthChange(this, HealthGained);
+	if (OnHealthChanged.IsBound())
+	{
+		OnHealthChanged.Broadcast(AttributeComponent->GetHealth());
+	}
+}
+
+void ASJBaseCharacter::LooseHealth(AActor* ActorInstigator, float HealthLost)
+{
+	AttributeComponent->ApplyHealthChange(ActorInstigator, HealthLost);
+	if (OnHealthChanged.IsBound())
+	{
+		OnHealthChanged.Broadcast(AttributeComponent->GetHealth());
+	}
 }
 
 void ASJBaseCharacter::SetCurrentInteractable(ASJInteractableActor* NewInteractable)
@@ -110,6 +133,12 @@ void ASJBaseCharacter::BeginPlay()
 	AttributeComponent->OnOwnerKilled.AddDynamic(this, &ThisClass::CharacterDied);
 }
 
+void ASJBaseCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+	GetWorldTimerManager().ClearTimer(FireCooldownHandle);
+}
+
 // Called every frame
 void ASJBaseCharacter::Tick(float DeltaTime)
 {
@@ -119,8 +148,16 @@ void ASJBaseCharacter::Tick(float DeltaTime)
 
 void ASJBaseCharacter::FireProjectile(FVector Location)
 {
-	if (!bCanFire || Bullets <= 0)
+	if (!bCanFire)
 	{
+		return;
+	}
+
+	if (Bullets <= 0)
+	{
+		FVector Location = GetActorLocation(); 
+		UGameplayStatics::PlaySoundAtLocation(this, EmptyPistolCue, Location);
+
 		return;
 	}
 
@@ -190,6 +227,10 @@ void ASJBaseCharacter::CharacterDied()
 void ASJBaseCharacter::OnMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
 	// TODO: we can refactor this to one method that returns the pickeable and then do the assignation
+	if (!GetWorld() || GetWorld()->bIsTearingDown)
+	{
+		return;
+	}
 
 	int32 RandomOffsetInX = FMath::RandRange(50, 200);
 	int32 RandomOffsetInY = FMath::RandRange(50, 200);
@@ -201,6 +242,7 @@ void ASJBaseCharacter::OnMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.Owner = this;
 		SpawnParams.Instigator = GetInstigator();
+
 		ASJPickeableActor* ItemToPick = GetWorld()->SpawnActor<ASJPickeableActor>(DropeableBulletsClass, LocationToSpawn, FRotator(), SpawnParams);
 		if (IsValid(ItemToPick))
 		{

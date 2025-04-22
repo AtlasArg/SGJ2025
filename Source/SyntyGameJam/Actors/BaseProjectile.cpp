@@ -8,6 +8,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "SyntyGameJam/SyntyGameJam.h"
 #include "SyntyGameJam/Actors/SJAttributeComponent.h"
+#include "SyntyGameJam/SJBaseCharacter.h"
 
 // Sets default values
 ABaseProjectile::ABaseProjectile()
@@ -50,6 +51,9 @@ void ABaseProjectile::BeginPlay()
 
 void ABaseProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
+
+	// TODO: Fix, posiblemente por ahora esten atravesando todo las balas....
+	// 
 	//if (OtherActor && OtherActor != this && OtherComp)
 	//{
 	//	// Optional: Apply damage or effects here
@@ -63,34 +67,17 @@ void ABaseProjectile::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, 
 {
 	if (OtherActor && OtherActor != GetInstigator())
 	{
-		// TODO Gas, estoy aca.
-
-		//// Apply Damage & Impulse
-		//if (USGameplayFunctionLibrary::ApplyDirectionalDamage(GetInstigator(), OtherActor, DamageAmount, SweepResults))
-		//{
-		//	// We only explode if the target can be damaged, it ignores anything it Overlaps that it cannot Damage (it requires an AttributeComponent on the target)
-		//	Explode();
-
-		//	if (ActionComp && GetBurningActionClass() && HasAuthority())
-		//	{
-		//		ActionComp->AddAction(GetInstigator(), GetBurningActionClass());
-		//	}
-		//}
-
-		UActorComponent* ActorComponent = OtherActor->GetComponentByClass(USJAttributeComponent::StaticClass()); //_USJAttributeComponent::GetAttributes(TargetActor);
-		USJAttributeComponent* AttributeComp = Cast<USJAttributeComponent>(ActorComponent);
-		if (AttributeComp)
+		// FIX THIS
+		ASJBaseCharacter* BaseCharacter = Cast<ASJBaseCharacter>(OtherActor);
+		if (IsValid(BaseCharacter))
 		{
-			//return AttributeComp->ApplyHealthChange(DamageCauser, -DamageAmount);
-			AttributeComp->ApplyHealthChange(GetInstigator(), -DamageAmount);
-
-			Destroy();
+			BaseCharacter->LooseHealth(GetInstigator(), -DamageAmount);
 		}
-		//return false;
+
+		Destroy();
 	}
 }
 
-// Called every frame
 void ABaseProjectile::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);

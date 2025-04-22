@@ -13,8 +13,10 @@ class ASJPickeableActor;
 class UAnimMontage;
 class ASJInteractableActor;
 
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FProjectileFired);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FItemsUpdated, int32, itemCount);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnCharacterAttributeChanged, float, NewValue);
 
 
 UCLASS()
@@ -38,6 +40,12 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FItemsUpdated OnBulletsUpdated;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnCharacterAttributeChanged OnHealthChanged;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnCharacterAttributeChanged OnReputationChanged;
 
 	UFUNCTION(BlueprintCallable)
 	void GainBullets(int32 GainedBullets);
@@ -65,6 +73,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Combat")
 	TObjectPtr<UAnimMontage> DeathMontage;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Combat")
+	TObjectPtr<USoundBase> EmptyPistolCue;
+
 	void FinishFiringProjectile();
 
 	void SetFireTargetLocation(FVector FireLocation);
@@ -76,6 +87,8 @@ public:
 
 	void GrantHealth(float HealthGained);
 
+	void LooseHealth(AActor* ActorInstigator, float HealthLost);
+
 	void SetCurrentInteractable(ASJInteractableActor* NewInteractable);
 
 	virtual void InteractWithMapElement();
@@ -83,6 +96,8 @@ public:
 protected:
 	
 	virtual void BeginPlay() override;
+
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	TObjectPtr<USkeletalMeshComponent> Weapon;

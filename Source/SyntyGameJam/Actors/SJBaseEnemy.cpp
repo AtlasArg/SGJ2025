@@ -22,6 +22,9 @@ ASJBaseEnemy::ASJBaseEnemy()
 
 	HealthBar = CreateDefaultSubobject<UWidgetComponent>("HealthBar");
 	HealthBar->SetupAttachment(GetRootComponent());
+
+	ReputationBar = CreateDefaultSubobject<UWidgetComponent>("ReputationBar");
+	ReputationBar->SetupAttachment(GetRootComponent());
 }
 
 void ASJBaseEnemy::PossessedBy(AController* NewController)

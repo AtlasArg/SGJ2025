@@ -38,6 +38,10 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<UWidgetComponent> HealthBar;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	TObjectPtr<UWidgetComponent> ReputationBar;
+
+	
 public:	
 	virtual void Tick(float DeltaTime) override;
 };

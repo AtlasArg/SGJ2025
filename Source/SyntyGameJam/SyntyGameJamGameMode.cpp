@@ -98,14 +98,33 @@ void ASyntyGameJamGameMode::BeginPlay()
 	GetWorldTimerManager().SetTimer(SpawnGoldTimerHandle, this, &ThisClass::SpawnGold, SecondsToSpawnGold, true);
 	GetWorldTimerManager().SetTimer(SpawnBulletsTimerHandle, this, &ThisClass::SpawnBullets, SecondsToSpawnBullets, true);
 
+	APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
+	if (PC)
+	{
+		PC->bShowMouseCursor = true;
+		PC->CurrentMouseCursor = EMouseCursor::Crosshairs; 
+	}
 
-	FTimerHandle ToRemoveHandle;
-	GetWorldTimerManager().SetTimer(ToRemoveHandle, this, &ThisClass::TestMethod, 2.0, false);
+	/*FTimerHandle ToRemoveHandle;
+	GetWorldTimerManager().SetTimer(ToRemoveHandle, this, &ThisClass::TestMethod, 2.0, false);*/
+}
+
+void ASyntyGameJamGameMode::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+
+	// Clear your timers to avoid callbacks after world is tearing down
+	GetWorldTimerManager().ClearTimer(SpawnGoldTimerHandle);
+	GetWorldTimerManager().ClearTimer(SpawnBulletsTimerHandle);
 }
 
 void ASyntyGameJamGameMode::SpawnEnemies()
 {
 	if (!EnemyClass)
+	{
+		return;
+	}
+	if (!GetWorld() || GetWorld()->bIsTearingDown)
 	{
 		return;
 	}
@@ -143,6 +162,11 @@ void ASyntyGameJamGameMode::ShowDefeatScreen()
 
 void ASyntyGameJamGameMode::SpawnBullets()
 {
+	if (!GetWorld() || GetWorld()->bIsTearingDown)
+	{
+		return;
+	}
+
 	if (ItemSpawnersPositions.Num() > 0)
 	{
 		int32 SpawnIndex = FMath::RandRange(0, ItemSpawnersPositions.Num() - 1);
@@ -161,6 +185,11 @@ void ASyntyGameJamGameMode::SpawnBullets()
 
 void ASyntyGameJamGameMode::SpawnGold()
 {
+	if (!GetWorld() || GetWorld()->bIsTearingDown)
+	{
+		return;
+	}
+
 	// TODO: refactor, son la misma funcion pero entra una clase nomas de diferencia.
 	if (ItemSpawnersPositions.Num() > 0)
 	{
