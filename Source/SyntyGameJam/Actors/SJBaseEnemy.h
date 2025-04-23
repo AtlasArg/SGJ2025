@@ -41,7 +41,12 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<UWidgetComponent> ReputationBar;
 
-	
+	FTimerHandle SpendCoinsTimerHandle;
 public:	
 	virtual void Tick(float DeltaTime) override;
+
+private:
+
+	UFUNCTION()
+	void SpendCoinsIfPossible();
 };

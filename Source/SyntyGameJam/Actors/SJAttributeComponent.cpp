@@ -106,7 +106,10 @@ bool USJAttributeComponent::ApplyHealthChange(AActor* InstigatorActor, float Del
 			
 			if (BaseCharacter != InstigatorCharacter)
 			{
-				InstigatorCharacter->GrantReputation(1); 
+				int32 ReputationToGain = BaseCharacter->GetReputation();
+				ReputationToGain = FMath::Max(1, ReputationToGain /2);
+				
+				InstigatorCharacter->GrantReputation(ReputationToGain);
 			}
 
 			GM->OnCharacterKilled(BaseCharacter);

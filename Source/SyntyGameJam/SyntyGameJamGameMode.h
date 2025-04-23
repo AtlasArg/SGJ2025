@@ -76,8 +76,6 @@ private:
 
 	FTimerHandle SpawnEnemiesTimerHandle;
 
-	FTimerHandle CheckReputationHandle;
-
 	void SendGameResultMessage(bool bVictory);
 };
 

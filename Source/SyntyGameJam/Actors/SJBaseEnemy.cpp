@@ -40,6 +40,9 @@ void ASJBaseEnemy::PossessedBy(AController* NewController)
 void ASJBaseEnemy::BeginPlay()
 {
 	Super::BeginPlay();
+
+	// TODO: ideally, this should have been an interaction with the saloon, not like this.
+	GetWorldTimerManager().SetTimer(SpendCoinsTimerHandle, this, &ThisClass::SpendCoinsIfPossible, 5.f, true);
 }
 
 void ASJBaseEnemy::CharacterDied()
@@ -52,4 +55,17 @@ void ASJBaseEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+}
+
+void ASJBaseEnemy::SpendCoinsIfPossible()
+{
+	// TODO: change! magic numbers!!!
+	if (GetGoldCoins() >= 5)
+	{
+		GrantReputation(2);
+		GrantHealth(20);
+		GainBullets(5);
+
+		RemoveGoldCoins(5);
+	}
 }
