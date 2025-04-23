@@ -62,6 +62,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE int32 GetGoldCoins() { return GoldCoins; }
 
+	FORCEINLINE ASJInteractableActor* GetCurrentInteractable() { return CurrentInteractable; }
+
 	virtual void ReceivePickeable_Implementation(ASJPickeableActor* Pickeable) override;
 
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
@@ -107,6 +109,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	TSubclassOf<AActor> ProjectileClass;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<USoundBase> HurtSound;
 
 	UPROPERTY(EditAnywhere, Category = "Drops")
 	TSubclassOf<AActor> DropeableBulletsClass;

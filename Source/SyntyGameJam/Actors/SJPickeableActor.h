@@ -48,7 +48,7 @@ protected:
 	TObjectPtr<UNiagaraSystem> PickEffect;
 
 	UPROPERTY(EditAnywhere)
-	TObjectPtr<USoundBase> PickSound;
+	TObjectPtr<USoundBase> PickupSound;
 
 private:
 

@@ -56,6 +56,9 @@ void ASyntyGameJamPlayerController::SetupInputComponent()
 
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ASyntyGameJamPlayerController::Move);
 		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Triggered, this, &ThisClass::FireProjectile);
+
+		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Triggered, this, &ThisClass::InteractWithPlace);
+		
 	}
 	else
 	{
@@ -144,9 +147,23 @@ void ASyntyGameJamPlayerController::FireProjectile()
 
 			if (GetWorld()->LineTraceSingleByChannel(HitResult, TraceStart, TraceEnd, ECC_Visibility, Params))
 			{
-				SyntyCharacter->FireProjectile(HitResult.ImpactPoint);
+				FVector TargetLocation = HitResult.ImpactPoint;
+				//FVector WeaponTipSocket = SyntyCharacter->GetWeapon()->GetSocketLocation("TipSocket");
+				//TargetLocation.Z = WeaponTipSocket.Z; // SyntyCharacter->GetActorLocation().Z;
+
+				TargetLocation.Z = SyntyCharacter->GetActorLocation().Z;
+
+				SyntyCharacter->FireProjectile(TargetLocation);
 			}
 		}
 
+	}
+}
+
+void ASyntyGameJamPlayerController::InteractWithPlace()
+{
+	if (ASyntyGameJamCharacter* SyntyCharacter = Cast<ASyntyGameJamCharacter>(GetPawn()))
+	{
+		SyntyCharacter->InteractWithMapElement();
 	}
 }

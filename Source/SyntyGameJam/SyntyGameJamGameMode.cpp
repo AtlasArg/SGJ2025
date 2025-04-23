@@ -49,10 +49,10 @@ void ASyntyGameJamGameMode::OnCharacterKilled(ASJBaseCharacter* KilledCharacter)
 		if (IsValid(EnemyCharacter))
 		{
 			SpawnedEnemies.Remove(EnemyCharacter);
-			if (SpawnedEnemies.Num() == 0)
+			/*if (SpawnedEnemies.Num() == 0)
 			{
 				ShowVictoryScreen();
-			}
+			}*/
 		}
 	}
 }
@@ -89,7 +89,14 @@ void ASyntyGameJamGameMode::BeginPlay()
 		ASJSpawner* Spawner = Cast<ASJSpawner>(ActorFound);
 		if (IsValid(Spawner))
 		{
-			EnemySpawnersPositions.Add(Spawner);
+			if (Spawner->ActorHasTag(FName("EnemySpawner")))
+			{
+				EnemySpawnersPositions.Add(Spawner);
+			}
+			if (Spawner->ActorHasTag(FName("PickupSpawner")))
+			{
+				ItemSpawnersPositions.Add(Spawner);
+			}
 		}
 	}
 
@@ -97,16 +104,7 @@ void ASyntyGameJamGameMode::BeginPlay()
 	
 	GetWorldTimerManager().SetTimer(SpawnGoldTimerHandle, this, &ThisClass::SpawnGold, SecondsToSpawnGold, true);
 	GetWorldTimerManager().SetTimer(SpawnBulletsTimerHandle, this, &ThisClass::SpawnBullets, SecondsToSpawnBullets, true);
-
-	APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
-	if (PC)
-	{
-		PC->bShowMouseCursor = true;
-		PC->CurrentMouseCursor = EMouseCursor::Crosshairs; 
-	}
-
-	/*FTimerHandle ToRemoveHandle;
-	GetWorldTimerManager().SetTimer(ToRemoveHandle, this, &ThisClass::TestMethod, 2.0, false);*/
+	GetWorldTimerManager().SetTimer(SpawnEnemiesTimerHandle, this, &ThisClass::SpawnEnemiesIfNeeded, SecondsToSpawnEnemies, true);
 }
 
 void ASyntyGameJamGameMode::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -116,6 +114,7 @@ void ASyntyGameJamGameMode::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	// Clear your timers to avoid callbacks after world is tearing down
 	GetWorldTimerManager().ClearTimer(SpawnGoldTimerHandle);
 	GetWorldTimerManager().ClearTimer(SpawnBulletsTimerHandle);
+	GetWorldTimerManager().ClearTimer(SpawnEnemiesTimerHandle);
 }
 
 void ASyntyGameJamGameMode::SpawnEnemies()
@@ -141,8 +140,16 @@ void ASyntyGameJamGameMode::SpawnEnemies()
 			{
 				FActorSpawnParameters SpawnParams;
 				SpawnParams.Owner = this;
+				SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 				ASJBaseEnemy* SpawnedEnemy = GetWorld()->SpawnActor<ASJBaseEnemy>(EnemyClass, ChosenSpawner->GetActorLocation(), FRotator::ZeroRotator, SpawnParams);
-				SpawnedEnemies.Add(SpawnedEnemy);
+				if (SpawnedEnemy)
+				{
+					SpawnedEnemies.Add(SpawnedEnemy);
+				}
+				else
+				{
+					UE_LOG(LogTemp, Warning, TEXT("Failed to spawn enemy at: %s"), *ChosenSpawner->GetActorLocation().ToString());
+				}
 			}
 
 			AvailableSpawners.RemoveAt(SpawnIndex);
@@ -205,14 +212,23 @@ void ASyntyGameJamGameMode::SpawnGold()
 	}
 }
 
-void ASyntyGameJamGameMode::TestMethod()
+void ASyntyGameJamGameMode::SpawnEnemiesIfNeeded()
 {
-	// TODO: remove all this shity test thing
-	APlayerController* PC = GetWorld()->GetFirstPlayerController();
-	ASyntyGameJamPlayerController* GameJamPC = Cast<ASyntyGameJamPlayerController>(PC);
-	ASyntyGameJamCharacter* JamCharacter = Cast<ASyntyGameJamCharacter>(GameJamPC->GetPawn());
+	if (!GetWorld() || GetWorld()->bIsTearingDown)
+	{
+		return;
+	}
 
-	JamCharacter->GrantReputation(ReputationToWin);
+	if (SpawnedEnemies.Num() <= 3)
+	{
+		int32 SpawnIndex = FMath::RandRange(0, EnemySpawnersPositions.Num() - 1);
+		ASJSpawner* ChosenSpawner = EnemySpawnersPositions[SpawnIndex];
+
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.Owner = this;
+		ASJBaseEnemy* SpawnedEnemy = GetWorld()->SpawnActor<ASJBaseEnemy>(EnemyClass, ChosenSpawner->GetActorLocation(), FRotator::ZeroRotator, SpawnParams);
+		SpawnedEnemies.Add(SpawnedEnemy);
+	}
 }
 
 void ASyntyGameJamGameMode::SendGameResultMessage(bool bVictory)

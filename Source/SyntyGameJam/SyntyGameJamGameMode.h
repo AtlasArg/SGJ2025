@@ -34,6 +34,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Spawneables")
 	float SecondsToSpawnGold = 8.f;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Spawneables")
+	float SecondsToSpawnEnemies = 10.f;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "GameConditions")
 	int32 ReputationToWin = 10;
 
@@ -55,11 +58,11 @@ private:
 	UFUNCTION()
 	void SpawnBullets();
 
-	UFUNCTION()
+	UFUNCTION() 
 	void SpawnGold();
-
+	
 	UFUNCTION()
-	void TestMethod(); //remove later!!!
+	void SpawnEnemiesIfNeeded();
 
 	TArray<ASJBaseEnemy*> SpawnedEnemies;
 
@@ -70,6 +73,10 @@ private:
 	FTimerHandle SpawnGoldTimerHandle;
 
 	FTimerHandle SpawnBulletsTimerHandle;
+
+	FTimerHandle SpawnEnemiesTimerHandle;
+
+	FTimerHandle CheckReputationHandle;
 
 	void SendGameResultMessage(bool bVictory);
 };

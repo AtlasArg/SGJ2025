@@ -102,6 +102,13 @@ bool USJAttributeComponent::ApplyHealthChange(AActor* InstigatorActor, float Del
 		if (GM)
 		{
 			ASJBaseCharacter* BaseCharacter = Cast<ASJBaseCharacter>(GetOwner());
+			ASJBaseCharacter* InstigatorCharacter = Cast<ASJBaseCharacter>(InstigatorActor);
+			
+			if (BaseCharacter != InstigatorCharacter)
+			{
+				InstigatorCharacter->GrantReputation(1); 
+			}
+
 			GM->OnCharacterKilled(BaseCharacter);
 		}
 

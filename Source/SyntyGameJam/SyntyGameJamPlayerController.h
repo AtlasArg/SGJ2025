@@ -53,6 +53,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Input")
 	TObjectPtr<UInputAction> FireAction;
 
+	UPROPERTY(EditAnywhere, Category = "Input")
+	TObjectPtr<UInputAction> InteractAction;
+
 	void ShowGameResult(bool bVictory);
 
 protected:
@@ -73,6 +76,8 @@ protected:
 
 private:
 	void FireProjectile(/*const FInputActionValue& Value*/);
+
+	void InteractWithPlace();
 	FVector CachedDestination;
 
 	//bool bIsTouch; // Is it a touch device

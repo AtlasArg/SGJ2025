@@ -7,6 +7,7 @@
 #include "Actors/SJPickeableActor.h"
 #include "Actors/SJInteractableActor.h"
 #include "SyntyGameJam/SyntyGameJam.h"
+#include "Components/CapsuleComponent.h"
 #include "Kismet/GameplayStatics.h"
 
 // Sets default values
@@ -15,8 +16,11 @@ ASJBaseCharacter::ASJBaseCharacter()
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bTickEvenWhenPaused = false;
 
-	GetMesh()->SetCollisionResponseToChannel(ECC_Projectile, ECR_Overlap);
-	GetMesh()->SetGenerateOverlapEvents(true);
+	/*GetMesh()->SetCollisionResponseToChannel(ECC_Projectile, ECR_Overlap);
+	GetMesh()->SetGenerateOverlapEvents(true);*/
+
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Projectile, ECR_Overlap);
+	GetCapsuleComponent()->SetGenerateOverlapEvents(true);
 
 	Weapon = CreateDefaultSubobject<USkeletalMeshComponent>("Weapon");
 	Weapon->SetupAttachment(GetMesh(), FName("RightHandSocket"));
@@ -107,6 +111,11 @@ void ASJBaseCharacter::GrantHealth(float HealthGained)
 void ASJBaseCharacter::LooseHealth(AActor* ActorInstigator, float HealthLost)
 {
 	AttributeComponent->ApplyHealthChange(ActorInstigator, HealthLost);
+	if (HurtSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, HurtSound, GetActorLocation());
+	}
+
 	if (OnHealthChanged.IsBound())
 	{
 		OnHealthChanged.Broadcast(AttributeComponent->GetHealth());
@@ -148,18 +157,18 @@ void ASJBaseCharacter::Tick(float DeltaTime)
 
 void ASJBaseCharacter::FireProjectile(FVector Location)
 {
-	if (!bCanFire)
+	if (!bCanFire || Bullets <= 0)
 	{
 		return;
 	}
 
-	if (Bullets <= 0)
-	{
-		FVector Location = GetActorLocation(); 
-		UGameplayStatics::PlaySoundAtLocation(this, EmptyPistolCue, Location);
+	//if (Bullets <= 0)
+	//{
+	//	FVector Location = GetActorLocation(); 
+	//	UGameplayStatics::PlaySoundAtLocation(this, EmptyPistolCue, Location);
 
-		return;
-	}
+	//	return;
+	//}
 
 	bCanFire = false;
 	GetWorld()->GetTimerManager().SetTimer(FireCooldownHandle, this, &ThisClass::ResetFire, FireCooldownSeconds, false);

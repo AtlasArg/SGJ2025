@@ -43,6 +43,11 @@ void ASJPickeableActor::BeginPlay()
 void ASJPickeableActor::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResults)
 {
 	ASJBaseCharacter* BaseCharacter = Cast<ASJBaseCharacter>(OtherActor);
+	if (PickupSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, PickupSound, GetActorLocation());
+	}
+
 	if (IsValid(BaseCharacter))
 	{
 		ISJPickeableReceiver::Execute_ReceivePickeable(BaseCharacter, this);

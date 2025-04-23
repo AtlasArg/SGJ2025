@@ -45,7 +45,7 @@ ABaseProjectile::ABaseProjectile()
 void ABaseProjectile::BeginPlay()
 {
 	Super::BeginPlay();
-	Collision->OnComponentHit.AddDynamic(this, &ThisClass::OnHit);
+	//Collision->OnComponentHit.AddDynamic(this, &ThisClass::OnHit);
 	Collision->OnComponentBeginOverlap.AddDynamic(this, &ThisClass::OnSphereOverlap);
 }
 
