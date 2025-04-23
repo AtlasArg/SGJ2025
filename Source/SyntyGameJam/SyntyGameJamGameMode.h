@@ -35,11 +35,11 @@ public:
 	float SecondsToSpawnGold = 8.f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Spawneables")
-	float SecondsToSpawnEnemies = 10.f;
+	float SecondsToSpawnEnemies = 25.f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "GameConditions")
 	int32 ReputationToWin = 10;
-
+	
 	void OnCharacterKilled(ASJBaseCharacter* KilledCharacter);
 
 	void OnCharacterGainedReputation(ASJBaseCharacter* ModifiedCharacter);

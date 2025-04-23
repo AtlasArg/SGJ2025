@@ -37,12 +37,19 @@ void ASJBaseEnemy::PossessedBy(AController* NewController)
 	SJAIController->GetBlackboardComponent()->SetValueAsBool(FName("HitReacting"), false);
 }
 
+void ASJBaseEnemy::ReceivePickeable_Implementation(ASJPickeableActor* Pickeable)
+{
+	Super::ReceivePickeable_Implementation(Pickeable);
+	SJAIController->GetBlackboardComponent()->SetValueAsObject(FName("ClosestPickeable"), nullptr);
+}
+
 void ASJBaseEnemy::BeginPlay()
 {
 	Super::BeginPlay();
 
 	// TODO: ideally, this should have been an interaction with the saloon, not like this.
-	GetWorldTimerManager().SetTimer(SpendCoinsTimerHandle, this, &ThisClass::SpendCoinsIfPossible, 5.f, true);
+	GetWorldTimerManager().SetTimer(SpendCoinsTimerHandle, this, &ThisClass::SpendCoinsIfPossible, 25.f, true);
+	GetWorldTimerManager().SetTimer(GenerateCoinsAndBulletsTimerHandle, this, &ThisClass::SpendCoinsIfPossible, 20.f, true);
 }
 
 void ASJBaseEnemy::CharacterDied()
@@ -57,8 +64,24 @@ void ASJBaseEnemy::Tick(float DeltaTime)
 
 }
 
+void ASJBaseEnemy::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	GetWorldTimerManager().ClearTimer(SpendCoinsTimerHandle);
+	GetWorldTimerManager().ClearTimer(GenerateCoinsAndBulletsTimerHandle);
+}
+
 void ASJBaseEnemy::SpendCoinsIfPossible()
 {
+	if (!GetWorld() || GetWorld()->bIsTearingDown)
+	{
+		return;
+	}
+
+	if (!IsValid(this) || !IsPendingKill())
+	{
+		return;
+	}
+
 	// TODO: change! magic numbers!!!
 	if (GetGoldCoins() >= 5)
 	{
@@ -68,4 +91,21 @@ void ASJBaseEnemy::SpendCoinsIfPossible()
 
 		RemoveGoldCoins(5);
 	}
+}
+
+void ASJBaseEnemy::GenerateCoinsAndBullets()
+{
+	if (!GetWorld() || GetWorld()->bIsTearingDown)
+	{
+		return;
+	}
+
+	if (!IsValid(this) || !IsPendingKill())
+	{
+		return;
+	}
+
+	// TODO: change! magic numbers!!!
+	GainGoldCoins(4);
+	GainBullets(5);
 }

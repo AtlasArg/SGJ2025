@@ -17,11 +17,16 @@ class SYNTYGAMEJAM_API ASJSaloon : public ASJInteractableActor
 public:
 	virtual void Interact(ASJBaseCharacter* InteractingCharacter) override;
 
+	virtual bool CanInteract(ASJBaseCharacter* InteractingCharacter) override;
+
 	UPROPERTY(VisibleAnywhere)
 	int32 Reputation = 2;
 
 	UPROPERTY(VisibleAnywhere)
 	int32 Health = 20;
+
+	UPROPERTY(VisibleAnywhere)
+	int32 Bullets = 5;
 
 	UPROPERTY(VisibleAnywhere)
 	int32 Cost = 5;

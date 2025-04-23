@@ -34,16 +34,16 @@ void ASJBaseCharacter::ReceivePickeable_Implementation(ASJPickeableActor* Pickea
 {
 	switch (Pickeable->PickeableType)
 	{
-		case EPickeableType::Bullets:
-			GainBullets(Pickeable->Amount);
-			break;
-		case EPickeableType::Coins:
-			GainGoldCoins(Pickeable->Amount);
-			break;
-		case EPickeableType::Health:
-			break;
-		default:
-			break;
+	case EPickeableType::Bullets:
+		GainBullets(Pickeable->Amount);
+		break;
+	case EPickeableType::Coins:
+		GainGoldCoins(Pickeable->Amount);
+		break;
+	case EPickeableType::Health:
+		break;
+	default:
+		break;
 	}
 
 	Pickeable->Destroy();
@@ -87,11 +87,19 @@ bool ASJBaseCharacter::CanMove()
 
 void ASJBaseCharacter::GrantReputation(int32 ReputationGranted)
 {
-	AttributeComponent->GrantReputation(ReputationGranted);
-	if (OnReputationChanged.IsBound())
+	if (AttributeComponent)
 	{
-		OnReputationChanged.Broadcast(GetReputation());
+		AttributeComponent->GrantReputation(ReputationGranted);
+		if (OnReputationChanged.IsBound())
+		{
+			OnReputationChanged.Broadcast(GetReputation());
+		}
 	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Attribute Component is null in ASJBaseCharacter, GrantReputation"));
+	}
+
 }
 
 int32 ASJBaseCharacter::GetReputation()
@@ -101,10 +109,17 @@ int32 ASJBaseCharacter::GetReputation()
 
 void ASJBaseCharacter::GrantHealth(float HealthGained)
 {
-	AttributeComponent->ApplyHealthChange(this, HealthGained);
-	if (OnHealthChanged.IsBound())
+	if (AttributeComponent)
 	{
-		OnHealthChanged.Broadcast(AttributeComponent->GetHealth());
+		AttributeComponent->ApplyHealthChange(this, HealthGained);
+		if (OnHealthChanged.IsBound())
+		{
+			OnHealthChanged.Broadcast(AttributeComponent->GetHealth());
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Attribute Component is null in ASJBaseCharacter, GrantHealth"));
 	}
 }
 
@@ -129,7 +144,7 @@ void ASJBaseCharacter::SetCurrentInteractable(ASJInteractableActor* NewInteracta
 
 void ASJBaseCharacter::InteractWithMapElement()
 {
-	if (CurrentInteractable)
+	if (CurrentInteractable && CurrentInteractable->CanInteract(this))
 	{
 		CurrentInteractable->Interact(this);
 	}

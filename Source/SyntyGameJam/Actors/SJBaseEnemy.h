@@ -30,6 +30,8 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category = "Combat")
 	TObjectPtr<AActor> CombatTarget; 
 
+	virtual void ReceivePickeable_Implementation(ASJPickeableActor* Pickeable) override;
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -42,11 +44,19 @@ protected:
 	TObjectPtr<UWidgetComponent> ReputationBar;
 
 	FTimerHandle SpendCoinsTimerHandle;
+
+	FTimerHandle GenerateCoinsAndBulletsTimerHandle;
 public:	
 	virtual void Tick(float DeltaTime) override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 private:
 
 	UFUNCTION()
 	void SpendCoinsIfPossible();
+
+	UFUNCTION()
+	void GenerateCoinsAndBullets();
+
+	
 };

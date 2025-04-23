@@ -4,6 +4,7 @@
 #include "SJInteractableActor.h"
 #include "Components/SphereComponent.h"
 #include "SyntyGameJam/SJBaseCharacter.h"
+#include "Components/WidgetComponent.h"
 
 // Sets default values
 ASJInteractableActor::ASJInteractableActor()
@@ -23,6 +24,9 @@ ASJInteractableActor::ASJInteractableActor()
     Mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
     Mesh->SetCollisionObjectType(ECC_WorldStatic);
     Mesh->SetCollisionResponseToAllChannels(ECR_Block);
+
+    InteractTextWidget = CreateDefaultSubobject<UWidgetComponent>("HealthBar");
+    InteractTextWidget->SetupAttachment(GetRootComponent());
 }
 
 // Called when the game starts or when spawned
@@ -39,6 +43,8 @@ void ASJInteractableActor::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, A
     {
         BaseCharacter->SetCurrentInteractable(this);
     }
+
+    InteractTextWidget->GetUserWidgetObject()->SetVisibility(ESlateVisibility::Visible);
 }
 
 void ASJInteractableActor::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
@@ -47,13 +53,9 @@ void ASJInteractableActor::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent
     {
         BaseCharacter->SetCurrentInteractable(nullptr);
     }
-}
 
-//void ASJInteractableActor::Interact_Implementation(ACharacter* InteractingCharacter)
-//{
-//    ASJBaseCharacter* BaseCharacter = Cast<ASJBaseCharacter>(InteractingCharacter);
-//    BaseCharacter->Interact();
-//}
+    InteractTextWidget->GetUserWidgetObject()->SetVisibility(ESlateVisibility::Collapsed);
+}
 
 // Called every frame
 void ASJInteractableActor::Tick(float DeltaTime)
@@ -65,5 +67,10 @@ void ASJInteractableActor::Tick(float DeltaTime)
 void ASJInteractableActor::Interact(ASJBaseCharacter* InteractingCharacter)
 {
 
+}
+
+bool ASJInteractableActor::CanInteract(ASJBaseCharacter* InteractingCharacter)
+{
+    return false;
 }
 

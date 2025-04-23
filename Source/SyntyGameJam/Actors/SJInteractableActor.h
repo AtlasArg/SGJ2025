@@ -9,6 +9,8 @@
 
 class USphereComponent;
 class ASJBaseCharacter;
+class UWidgetComponent;
+
 UCLASS()
 class SYNTYGAMEJAM_API ASJInteractableActor : public AActor//, public ISJInteractableInterface
 {
@@ -24,12 +26,17 @@ public:
 
 	virtual void Interact(ASJBaseCharacter* InteractingCharacter);
 
+	virtual bool CanInteract(ASJBaseCharacter* InteractingCharacter);
+
 protected:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USphereComponent> InteractionZone;
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UStaticMeshComponent> Mesh;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	TObjectPtr<UWidgetComponent> InteractTextWidget;
 
 	virtual void BeginPlay() override;
 

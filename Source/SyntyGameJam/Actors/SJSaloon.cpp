@@ -9,5 +9,13 @@ void ASJSaloon::Interact(ASJBaseCharacter* InteractingCharacter)
 	InteractingCharacter->GrantReputation(Reputation);
 	InteractingCharacter->GrantHealth(Health);
 
+	InteractingCharacter->GainBullets(Bullets); // this was part of the saloon
+
 	InteractingCharacter->RemoveGoldCoins(Cost);
+}
+
+bool ASJSaloon::CanInteract(ASJBaseCharacter* InteractingCharacter)
+{
+	return InteractingCharacter->GetGoldCoins() >= Cost;
+
 }

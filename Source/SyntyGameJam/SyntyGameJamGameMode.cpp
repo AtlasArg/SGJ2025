@@ -105,20 +105,6 @@ void ASyntyGameJamGameMode::BeginPlay()
 	GetWorldTimerManager().SetTimer(SpawnGoldTimerHandle, this, &ThisClass::SpawnGold, SecondsToSpawnGold, true);
 	GetWorldTimerManager().SetTimer(SpawnBulletsTimerHandle, this, &ThisClass::SpawnBullets, SecondsToSpawnBullets, true);
 	GetWorldTimerManager().SetTimer(SpawnEnemiesTimerHandle, this, &ThisClass::SpawnEnemiesIfNeeded, SecondsToSpawnEnemies, true);
-
-	APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
-	if (PC && PC->GetPawn())
-	{
-		// OK
-		int32 test = 1;
-		test++;
-	}
-	else
-	{
-		int32 test = 2;
-		test++;
-		// No tiene pawn poseído
-	}
 }
 
 void ASyntyGameJamGameMode::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -242,11 +228,13 @@ void ASyntyGameJamGameMode::SpawnEnemiesIfNeeded()
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.Owner = this;
 		ASJBaseEnemy* SpawnedEnemy = GetWorld()->SpawnActor<ASJBaseEnemy>(EnemyClass, ChosenSpawner->GetActorLocation(), FRotator::ZeroRotator, SpawnParams);
+		if (IsValid(SpawnedEnemy))
+		{
+			int32 RandomReputation = FMath::RandRange(0, 3);
+			SpawnedEnemy->GrantReputation(RandomReputation);
 
-		int32 RandomReputation = FMath::RandRange(0, 3);
-		SpawnedEnemy->GrantReputation(RandomReputation);
-
-		SpawnedEnemies.Add(SpawnedEnemy);
+			SpawnedEnemies.Add(SpawnedEnemy);
+		}
 	}
 }
 

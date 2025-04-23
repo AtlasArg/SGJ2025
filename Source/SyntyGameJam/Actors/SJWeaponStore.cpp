@@ -9,3 +9,8 @@ void ASJWeaponStore::Interact(ASJBaseCharacter* InteractingCharacter)
 	InteractingCharacter->GainBullets(Bullets);
 	InteractingCharacter->RemoveGoldCoins(Cost);
 }
+
+bool ASJWeaponStore::CanInteract(ASJBaseCharacter* InteractingCharacter)
+{
+	return InteractingCharacter->GetGoldCoins() >= Cost;
+}

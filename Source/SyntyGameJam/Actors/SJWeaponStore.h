@@ -17,6 +17,8 @@ class SYNTYGAMEJAM_API ASJWeaponStore : public ASJInteractableActor
 public:
 	virtual void Interact(ASJBaseCharacter* InteractingCharacter) override;
 
+	virtual bool CanInteract(ASJBaseCharacter* InteractingCharacter) override;
+
 	UPROPERTY(VisibleAnywhere)
 	int32 Bullets = 5;
 
