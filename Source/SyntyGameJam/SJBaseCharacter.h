@@ -12,6 +12,7 @@ class USkeletalMeshComponent;
 class ASJPickeableActor;
 class UAnimMontage;
 class ASJInteractableActor;
+class USoundAttenuation;
 
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FProjectileFired);
@@ -77,6 +78,12 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Combat")
 	TObjectPtr<USoundBase> EmptyPistolCue;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Combat")
+	TObjectPtr<USoundBase> FireSoundCue;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Combat")
+	TObjectPtr<USoundAttenuation> SoundAttenuation;
 
 	void FinishFiringProjectile();
 

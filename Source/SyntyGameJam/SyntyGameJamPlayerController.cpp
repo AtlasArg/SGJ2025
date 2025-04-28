@@ -12,6 +12,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "Engine/LocalPlayer.h"
 #include "Actors/BaseProjectile.h"
+#include "SyntyGameJam/SyntyGameJam.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -138,25 +139,18 @@ void ASyntyGameJamPlayerController::FireProjectile()
 
 		if (DeprojectMousePositionToWorld(WorldLocation, WorldDirection))
 		{
-			FHitResult HitResult;
-			FVector TraceStart = WorldLocation;
-			FVector TraceEnd = TraceStart + WorldDirection * 10000.f; // long range trace
+			// Altura a la que queremos disparar (altura del personaje)
+			float CharacterZ = SyntyCharacter->GetActorLocation().Z;
 
-			FCollisionQueryParams Params;
-			Params.AddIgnoredActor(this); // Ignore self
+			// Plane equation: (PointOnPlane - RayOrigin) . PlaneNormal = 0
+			float t = (CharacterZ - WorldLocation.Z) / WorldDirection.Z;
 
-			if (GetWorld()->LineTraceSingleByChannel(HitResult, TraceStart, TraceEnd, ECC_Visibility, Params))
-			{
-				FVector TargetLocation = HitResult.ImpactPoint;
-				//FVector WeaponTipSocket = SyntyCharacter->GetWeapon()->GetSocketLocation("TipSocket");
-				//TargetLocation.Z = WeaponTipSocket.Z; // SyntyCharacter->GetActorLocation().Z;
+			FVector IntersectionPoint = WorldLocation + WorldDirection * t;
 
-				TargetLocation.Z = SyntyCharacter->GetActorLocation().Z;
+			// Ahora disparás al punto correcto:
+			SyntyCharacter->FireProjectile(IntersectionPoint);
 
-				SyntyCharacter->FireProjectile(TargetLocation);
-			}
 		}
-
 	}
 }
 

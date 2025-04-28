@@ -56,6 +56,8 @@ void ASJBaseCharacter::FinishFiringProjectile()
 		return;
 	}
 
+	UGameplayStatics::PlaySoundAtLocation(this, FireSoundCue, GetActorLocation(), 1.0f, 1.0f, 0.0f, SoundAttenuation);
+
 	FTransform MuzzleTransform = GetMesh()->GetSocketTransform(MuzzleSocket);
 	FVector MuzzleLocation = MuzzleTransform.GetLocation();
 
@@ -128,7 +130,8 @@ void ASJBaseCharacter::LooseHealth(AActor* ActorInstigator, float HealthLost)
 	AttributeComponent->ApplyHealthChange(ActorInstigator, HealthLost);
 	if (HurtSound)
 	{
-		UGameplayStatics::PlaySoundAtLocation(this, HurtSound, GetActorLocation());
+		//UGameplayStatics::PlaySoundAtLocation(this, HurtSound, GetActorLocation());
+		UGameplayStatics::PlaySoundAtLocation(this, HurtSound, GetActorLocation(), 1.0f, 1.0f, 0.0f, SoundAttenuation);
 	}
 
 	if (OnHealthChanged.IsBound())

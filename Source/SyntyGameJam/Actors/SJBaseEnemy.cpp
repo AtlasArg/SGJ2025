@@ -49,7 +49,7 @@ void ASJBaseEnemy::BeginPlay()
 
 	// TODO: ideally, this should have been an interaction with the saloon, not like this.
 	GetWorldTimerManager().SetTimer(SpendCoinsTimerHandle, this, &ThisClass::SpendCoinsIfPossible, 25.f, true);
-	GetWorldTimerManager().SetTimer(GenerateCoinsAndBulletsTimerHandle, this, &ThisClass::SpendCoinsIfPossible, 20.f, true);
+	GetWorldTimerManager().SetTimer(GenerateCoinsAndBulletsTimerHandle, this, &ThisClass::GenerateCoinsAndBullets, 4.f, true);
 }
 
 void ASJBaseEnemy::CharacterDied()
@@ -77,7 +77,7 @@ void ASJBaseEnemy::SpendCoinsIfPossible()
 		return;
 	}
 
-	if (!IsValid(this) || !IsPendingKill())
+	if (!IsValid(this) || IsPendingKill())
 	{
 		return;
 	}
@@ -95,17 +95,24 @@ void ASJBaseEnemy::SpendCoinsIfPossible()
 
 void ASJBaseEnemy::GenerateCoinsAndBullets()
 {
-	if (!GetWorld() || GetWorld()->bIsTearingDown)
+	if (!GetWorld() || GetWorld()->bIsTearingDown) 
 	{
 		return;
 	}
 
-	if (!IsValid(this) || !IsPendingKill())
+	if (!IsValid(this) || IsPendingKill())
 	{
 		return;
 	}
 
 	// TODO: change! magic numbers!!!
-	GainGoldCoins(4);
-	GainBullets(5);
+	if (GetBulletCount() <= 2)
+	{
+		GainBullets(5);
+	}
+
+	if (GetGoldCoins() < 5)
+	{
+		GainGoldCoins(4);
+	}
 }
