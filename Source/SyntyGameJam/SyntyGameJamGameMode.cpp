@@ -255,7 +255,7 @@ void ASyntyGameJamGameMode::SendGameResultMessage(bool bVictory)
 	if (PC)
 	{
 		PC->bShowMouseCursor = true;
-		PC->SetInputMode(FInputModeUIOnly());
+//		PC->SetInputMode(FInputModeUIOnly());
 
 		ASyntyGameJamPlayerController* GameJamPC = Cast<ASyntyGameJamPlayerController>(PC);
 		GameJamPC->ShowGameResult(bVictory);
