@@ -16,16 +16,10 @@ class SYNTYGAMEJAM_API USJAttributeComponent : public UActorComponent
 	GENERATED_BODY()
 
 public:	
-	// Sets default values for this component's properties
 	USJAttributeComponent();
 
-
-
 protected:
-	// Called when the game starts
 	virtual void BeginPlay() override;
-
-	/*virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;*/
 
 	UPROPERTY(VisibleAnywhere,  BlueprintReadOnly, Category = "Attributes")
 	float Health;
@@ -37,7 +31,6 @@ protected:
 	int32 Reputation;
 
 public:	
-	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	UFUNCTION(BlueprintCallable, Category = "Attributes")

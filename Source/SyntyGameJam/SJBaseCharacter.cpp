@@ -175,7 +175,7 @@ void ASJBaseCharacter::Tick(float DeltaTime)
 
 void ASJBaseCharacter::FireProjectile(FVector Location)
 {
-	if (!bCanFire) // || Bullets <= 0)
+	if (!bCanFire) 
 	{
 		return;
 	}

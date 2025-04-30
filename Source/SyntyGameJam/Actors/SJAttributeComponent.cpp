@@ -78,12 +78,6 @@ bool USJAttributeComponent::ApplyHealthChange(AActor* InstigatorActor, float Del
 		return false;
 	}
 
-	/*if (Delta < 0.0f)
-	{
-		const float DamageMultiplier = CVarDamageMultiplier.GetValueOnGameThread();
-		Delta *= DamageMultiplier;
-	}*/
-
 	float OldHealth = Health;
 	float NewHealth = FMath::Clamp(Health + Delta, 0.0f, HealthMax);
 

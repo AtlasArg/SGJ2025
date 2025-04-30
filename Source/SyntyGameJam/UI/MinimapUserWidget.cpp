@@ -73,10 +73,11 @@ void UMinimapUserWidget::AddNewEnemyIconToMap(ASJBaseEnemy* NewEnemy)
 void UMinimapUserWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-	HalfUISizeInX = MapSizeBoxContainerSize / 2;// MapImage->GetBrush().ImageSize.X / 2;
-	HalfUISizeInY = MapSizeBoxContainerSize / 2;//MapImage->GetBrush().ImageSize.Y / 2;
+	HalfUISizeInX = MapSizeBoxContainerSize / 2;
+	HalfUISizeInY = MapSizeBoxContainerSize / 2;
 
-	AddIconsToMap();
+	//AddIconsToMap();
+	GetWorld()->GetTimerManager().SetTimerForNextTick(this, &UMinimapUserWidget::AddIconsToMap);
 }
 
 void UMinimapUserWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)

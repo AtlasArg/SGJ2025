@@ -13,7 +13,6 @@ ASJBaseEnemy::ASJBaseEnemy()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
-	// TODO: Check
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;

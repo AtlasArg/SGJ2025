@@ -12,7 +12,7 @@ class ASJBaseCharacter;
 class UWidgetComponent;
 
 UCLASS()
-class SYNTYGAMEJAM_API ASJInteractableActor : public AActor//, public ISJInteractableInterface
+class SYNTYGAMEJAM_API ASJInteractableActor : public AActor
 {
 	GENERATED_BODY()
 	

@@ -16,7 +16,6 @@ ASJPickeableActor::ASJPickeableActor()
 
 	Collision = CreateDefaultSubobject<USphereComponent>(TEXT("Collision"));
 	Collision->InitSphereRadius(8.f);
-	//Collision->SetCollisionProfileName(TEXT("BlockAll"));
 	RootComponent = Collision;
 
 	Collision->SetCollisionObjectType(ECC_Pickeable);
