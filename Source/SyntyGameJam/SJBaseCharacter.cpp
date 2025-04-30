@@ -175,18 +175,18 @@ void ASJBaseCharacter::Tick(float DeltaTime)
 
 void ASJBaseCharacter::FireProjectile(FVector Location)
 {
-	if (!bCanFire || Bullets <= 0)
+	if (!bCanFire) // || Bullets <= 0)
 	{
 		return;
 	}
 
-	//if (Bullets <= 0)
-	//{
-	//	FVector Location = GetActorLocation(); 
-	//	UGameplayStatics::PlaySoundAtLocation(this, EmptyPistolCue, Location);
+	if (Bullets <= 0)
+	{
+		FVector Location = GetActorLocation(); 
+		UGameplayStatics::PlaySoundAtLocation(this, EmptyPistolCue, Location);
 
-	//	return;
-	//}
+		return;
+	}
 
 	bCanFire = false;
 	GetWorld()->GetTimerManager().SetTimer(FireCooldownHandle, this, &ThisClass::ResetFire, FireCooldownSeconds, false);

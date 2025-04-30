@@ -1,6 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "BaseProjectile.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Components/SphereComponent.h"
@@ -27,6 +24,12 @@ ABaseProjectile::ABaseProjectile()
 	Collision->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Overlap);
 	Collision->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Overlap);
 	Collision->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+	//Collision->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	//Collision->SetCollisionObjectType(ECC_Projectile);
+	//Collision->SetCollisionResponseToAllChannels(ECR_Ignore);
+	//Collision->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Block);
+	//Collision->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+	//Collision->SetNotifyRigidBodyCollision(true);
 
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	Mesh->SetupAttachment(RootComponent);
@@ -54,13 +57,13 @@ void ABaseProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UP
 
 	// TODO: Fix, posiblemente por ahora esten atravesando todo las balas....
 	// 
-	//if (OtherActor && OtherActor != this && OtherComp)
-	//{
-	//	// Optional: Apply damage or effects here
-	//	// UGameplayStatics::ApplyDamage(...);
+	if (OtherActor && OtherActor != this && OtherComp)
+	{
+		// Optional: Apply damage or effects here
+		// UGameplayStatics::ApplyDamage(...);
 
-	//	Destroy(); // Destroy on impact
-	//}
+		Destroy(); // Destroy on impact
+	}
 }
 
 void ABaseProjectile::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResults)

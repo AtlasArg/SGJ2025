@@ -13,6 +13,7 @@
 #include "Engine/LocalPlayer.h"
 #include "Actors/BaseProjectile.h"
 #include "SyntyGameJam/SyntyGameJam.h"
+#include "Actors/SJBaseEnemy.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -41,6 +42,11 @@ void ASyntyGameJamPlayerController::ShowGameResult(bool bVictory)
 	OnShowGameResultEvent.Broadcast(bVictory);
 }
 
+void ASyntyGameJamPlayerController::TrackNewEnemyOnMinimap(ASJBaseEnemy* SpawnedEnemy)
+{
+	OnNewEnemyCreated.Broadcast(SpawnedEnemy);
+}
+
 void ASyntyGameJamPlayerController::SetupInputComponent()
 {
 	// set up gameplay key bindings
@@ -49,16 +55,10 @@ void ASyntyGameJamPlayerController::SetupInputComponent()
 	// Set up action bindings
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(InputComponent))
 	{
-		// Setup mouse input events
-		/*EnhancedInputComponent->BindAction(SetDestinationClickAction, ETriggerEvent::Started, this, &ASyntyGameJamPlayerController::OnInputStarted);
-		EnhancedInputComponent->BindAction(SetDestinationClickAction, ETriggerEvent::Triggered, this, &ASyntyGameJamPlayerController::OnSetDestinationTriggered);
-		EnhancedInputComponent->BindAction(SetDestinationClickAction, ETriggerEvent::Completed, this, &ASyntyGameJamPlayerController::OnSetDestinationReleased);
-		EnhancedInputComponent->BindAction(SetDestinationClickAction, ETriggerEvent::Canceled, this, &ASyntyGameJamPlayerController::OnSetDestinationReleased);*/
-
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ASyntyGameJamPlayerController::Move);
-		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Triggered, this, &ThisClass::FireProjectile);
+		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Started, this, &ThisClass::FireProjectile);
 
-		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Triggered, this, &ThisClass::InteractWithPlace);
+		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, this, &ThisClass::InteractWithPlace);
 		
 	}
 	else
@@ -70,41 +70,6 @@ void ASyntyGameJamPlayerController::SetupInputComponent()
 void ASyntyGameJamPlayerController::OnInputStarted()
 {
 	StopMovement();
-}
-
-// Triggered every frame when the input is held down
-void ASyntyGameJamPlayerController::OnSetDestinationTriggered()
-{
-
-	FHitResult Hit;
-	bool bHitSuccessful = false;
-	bHitSuccessful = GetHitResultUnderCursor(ECollisionChannel::ECC_Visibility, true, Hit);
-	// If we hit a surface, cache the location
-	if (bHitSuccessful)
-	{
-		CachedDestination = Hit.Location;
-	}
-	
-	// Move towards mouse pointer or touch
-	APawn* ControlledPawn = GetPawn();
-	if (ControlledPawn != nullptr)
-	{
-		FVector WorldDirection = (CachedDestination - ControlledPawn->GetActorLocation()).GetSafeNormal();
-		ControlledPawn->AddMovementInput(WorldDirection, 1.0, false);
-	}
-}
-
-void ASyntyGameJamPlayerController::OnSetDestinationReleased()
-{
-	// If it was a short press
-	//if (FollowTime <= ShortPressThreshold)
-	//{
-	//	// We move there and spawn some particles
-	//	UAIBlueprintHelperLibrary::SimpleMoveToLocation(this, CachedDestination);
-	//	UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, FXCursor, CachedDestination, FRotator::ZeroRotator, FVector(1.f, 1.f, 1.f), true, true, ENCPoolMethod::None, true);
-	//}
-
-	//FollowTime = 0.f;
 }
 
 void ASyntyGameJamPlayerController::Move(const FInputActionValue& InputActionValue)

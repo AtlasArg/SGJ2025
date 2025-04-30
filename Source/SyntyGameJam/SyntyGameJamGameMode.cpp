@@ -145,7 +145,7 @@ void ASyntyGameJamGameMode::SpawnEnemies()
 
 				if (SpawnedEnemy)
 				{
-					SpawnedEnemies.Add(SpawnedEnemy);
+					SpawnedEnemies.Add(SpawnedEnemy);					
 				}
 				else
 				{
@@ -166,6 +166,17 @@ void ASyntyGameJamGameMode::ShowVictoryScreen()
 void ASyntyGameJamGameMode::ShowDefeatScreen()
 {
 	SendGameResultMessage(false);
+}
+
+void ASyntyGameJamGameMode::TrackNewEnemyOnMinimap(ASJBaseEnemy* SpawnedEnemy)
+{
+	// TODO: Ideally this should be a message form the message subsystem
+	APlayerController* PC = GetWorld()->GetFirstPlayerController();
+	if (PC)
+	{
+		ASyntyGameJamPlayerController* GameJamPC = Cast<ASyntyGameJamPlayerController>(PC);
+		GameJamPC->TrackNewEnemyOnMinimap(SpawnedEnemy);
+	}
 }
 
 void ASyntyGameJamGameMode::SpawnBullets()
@@ -233,6 +244,7 @@ void ASyntyGameJamGameMode::SpawnEnemiesIfNeeded()
 			int32 RandomReputation = FMath::RandRange(0, 3);
 			SpawnedEnemy->GrantReputation(RandomReputation);
 
+			TrackNewEnemyOnMinimap(SpawnedEnemy);
 			SpawnedEnemies.Add(SpawnedEnemy);
 		}
 	}

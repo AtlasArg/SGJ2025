@@ -8,6 +8,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Components/SceneCaptureComponent2D.h"
 #include "Materials/Material.h"
 #include "Engine/World.h"
 
@@ -43,6 +44,29 @@ ASyntyGameJamCharacter::ASyntyGameJamCharacter()
 	// Activate ticking in order to update the cursor every frame.
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
+
+	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComponent"));
+	SpringArmComponent->SetWorldRotation(FRotator(-90.f, 0.f, 0.f));
+	SpringArmComponent->bInheritPitch = false;
+	SpringArmComponent->bInheritYaw = false;
+	SpringArmComponent->bInheritRoll = false;
+	SpringArmComponent->TargetArmLength = 9000.f;
+
+	SpringArmComponent->SetupAttachment(GetRootComponent());
+
+	SceneCaptureComponent = CreateDefaultSubobject<USceneCaptureComponent2D>(TEXT("SceneCaptureComponent"));
+	SceneCaptureComponent->AttachToComponent(SpringArmComponent, FAttachmentTransformRules::KeepRelativeTransform);
+
+	SceneCaptureComponent->bCaptureEveryFrame = true;
+	SceneCaptureComponent->bCaptureOnMovement = true;
+
+	SceneCaptureComponent->ShowFlags.DynamicShadows = false;
+	SceneCaptureComponent->ShowFlags.PostProcessing = false;
+	SceneCaptureComponent->ShowFlags.Lighting = false;
+	SceneCaptureComponent->ShowFlags.SkyLighting = false;
+
+	SceneCaptureComponent->ProjectionType = ECameraProjectionMode::Orthographic;
+	SceneCaptureComponent->OrthoWidth = 6000.f;
 
 }
 

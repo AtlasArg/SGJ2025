@@ -55,6 +55,8 @@ private:
 
 	void ShowDefeatScreen();
 
+	void TrackNewEnemyOnMinimap(ASJBaseEnemy* SpawnedEnemy);
+
 	UFUNCTION()
 	void SpawnBullets();
 

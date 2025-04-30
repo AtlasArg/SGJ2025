@@ -12,9 +12,12 @@ class UNiagaraSystem;
 class UInputMappingContext;
 class UInputAction;
 struct FInputActionValue;
+class ASJBaseEnemy;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnShowGameResultEvent, bool, bValue);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnNewEnemyCreated, ASJBaseEnemy*, NewEnemy);
 
 UCLASS()
 class ASyntyGameJamPlayerController : public APlayerController
@@ -26,6 +29,9 @@ public:
 
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FOnShowGameResultEvent OnShowGameResultEvent;
+
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FOnNewEnemyCreated OnNewEnemyCreated;
 
 	/** Time Threshold to know if it was a short press */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
@@ -58,30 +64,23 @@ public:
 
 	void ShowGameResult(bool bVictory);
 
+	void TrackNewEnemyOnMinimap(ASJBaseEnemy* SpawnedEnemy);
+
 protected:
 	/** True if the controlled character should navigate to the mouse cursor. */
 	uint32 bMoveToMouseCursor : 1;
 
 	virtual void SetupInputComponent() override;
-	
-	// To add mapping context
 	virtual void BeginPlay();
-
-	/** Input handlers for SetDestination action. */
 	void OnInputStarted();
-	void OnSetDestinationTriggered();
-	void OnSetDestinationReleased();
 
 	void Move(const FInputActionValue& InputActionValue);
 
 private:
-	void FireProjectile(/*const FInputActionValue& Value*/);
+	void FireProjectile();
 
 	void InteractWithPlace();
 	FVector CachedDestination;
-
-	//bool bIsTouch; // Is it a touch device
-	//float FollowTime; // For how long it has been pressed	
 };
 
 

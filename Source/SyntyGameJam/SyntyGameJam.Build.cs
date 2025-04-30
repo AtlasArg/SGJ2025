@@ -8,8 +8,8 @@ public class SyntyGameJam : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
-        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "NavigationSystem", "AIModule", "Niagara", "EnhancedInput", "UMG", "ModularGameplay"/*, "GameplayMessageRuntime", "ModularGameplay"*/ });
+        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "NavigationSystem", "AIModule", "Niagara", "EnhancedInput", "UMG", "ModularGameplay"/*, "ModularGameplay"*//*, "GameplayMessageRuntime", "ModularGameplay"*/ });
 
-        PrivateDependencyModuleNames.AddRange(new string[] { "GameplayTags"/*, "GameplayMessageRuntime"*/ /*"GameplayTasks",*/  });
+        PrivateDependencyModuleNames.AddRange(new string[] { "GameplayTags"/*, "GameplayMessageRuntime" */ /*"GameplayTasks",*/  });
     }
 }
