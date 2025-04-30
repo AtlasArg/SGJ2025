@@ -54,7 +54,11 @@ void ASJInteractableActor::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent
         BaseCharacter->SetCurrentInteractable(nullptr);
     }
 
-    InteractTextWidget->GetUserWidgetObject()->SetVisibility(ESlateVisibility::Collapsed);
+    UUserWidget* UserWidget = InteractTextWidget->GetUserWidgetObject();
+    if (IsValid(UserWidget))
+    {
+        UserWidget->SetVisibility(ESlateVisibility::Collapsed);
+    }
 }
 
 // Called every frame
