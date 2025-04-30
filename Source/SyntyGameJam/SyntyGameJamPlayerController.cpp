@@ -22,7 +22,6 @@ ASyntyGameJamPlayerController::ASyntyGameJamPlayerController()
 	bShowMouseCursor = true;
 	DefaultMouseCursor = EMouseCursor::Default;
 	CachedDestination = FVector::ZeroVector;
-	//FollowTime = 0.f;
 }
 
 void ASyntyGameJamPlayerController::BeginPlay()
@@ -65,11 +64,6 @@ void ASyntyGameJamPlayerController::SetupInputComponent()
 	{
 		UE_LOG(LogTemplateCharacter, Error, TEXT("'%s' Failed to find an Enhanced Input Component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
 	}
-}
-
-void ASyntyGameJamPlayerController::OnInputStarted()
-{
-	StopMovement();
 }
 
 void ASyntyGameJamPlayerController::Move(const FInputActionValue& InputActionValue)
